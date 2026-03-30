@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clearance AI — Prediction Market Intelligence</title>
+<meta name="description" content="AI-powered guides and frameworks for prediction market traders. Learn to find +EV trades, build automated agents, and trade with structure.">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --off-black: #0f0f0f;
+    --panel: #141414;
+    --border: #1e1e1e;
+    --border-light: #2a2a2a;
+    --green: #00ff87;
+    --green-dim: #00cc6a;
+    --green-muted: rgba(0,255,135,0.08);
+    --amber: #f5a623;
+    --white: #f0ede8;
+    --gray: #6b6b6b;
+    --gray-light: #9a9a9a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    position: relative; z-index: 10;
+    background: var(--green); overflow: hidden;
+    height: 32px; display: flex; align-items: center;
+  }
+  .ticker-track {
+    display: flex;
+    animation: ticker 32s linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--black);
+    padding: 0 40px; font-weight: 500; letter-spacing: 0.05em;
+  }
+  .ticker-sep { color: rgba(0,0,0,0.3); }
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* NAV */
+  nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,8,8,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; letter-spacing: 0.12em;
+    color: var(--white); text-decoration: none;
+  }
+  .nav-logo span { color: var(--green); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; letter-spacing: 0.08em;
+    color: var(--gray-light); text-decoration: none;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-cta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; letter-spacing: 0.08em;
+    color: var(--black); background: var(--green);
+    padding: 10px 20px; text-decoration: none;
+    font-weight: 500; transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--green-dim); }
+
+  /* HERO */
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 88vh;
+    display: flex; align-items: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    padding: 100px 40px;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px; opacity: 0.4;
+  }
+  .hero-glow {
+    position: absolute; bottom: -200px; left: -100px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,255,135,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-glow-right {
+    position: absolute; top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,255,135,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    position: relative; max-width: 780px;
+  }
+  .hero-label {
+    display: inline-flex; align-items: center;
+    gap: 10px; font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em;
+    color: var(--green); text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .hero-label::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--green); border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 130px);
+    line-height: 0.9; letter-spacing: 0.02em;
+    color: var(--white); margin-bottom: 36px;
+  }
+  h1 em { font-style: normal; color: var(--green); display: block; }
+  .hero-sub {
+    font-size: 18px; line-height: 1.7;
+    color: var(--gray-light);
+    max-width: 580px; margin-bottom: 52px;
+  }
+  .hero-sub strong { color: var(--white); font-weight: 500; }
+  .hero-actions { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+
+  .btn-primary {
+    display: inline-flex; align-items: center;
+    background: var(--green); color: var(--black);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: 0.06em; text-decoration: none;
+    padding: 16px 32px; transition: all 0.2s;
+  }
+  .btn-primary::after { content: ' \2192'; }
+  .btn-primary:hover { background: var(--green-dim); transform: translateY(-1px); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center;
+    background: transparent; color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; letter-spacing: 0.06em;
+    text-decoration: none; padding: 16px 32px;
+    border: 1px solid var(--border-light); transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+  .hero-stats {
+    margin-top: 64px; display: flex; gap: 56px;
+    padding-top: 40px; border-top: 1px solid var(--border);
+  }
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px; letter-spacing: 0.04em;
+    color: var(--white); line-height: 1;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+    color: var(--gray); text-transform: uppercase; margin-top: 6px;
+  }
+
+  /* SECTIONS */
+  .section {
+    position: relative; z-index: 1;
+    padding: 100px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header {
+    display: flex; align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 60px; gap: 32px;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--green); margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px; letter-spacing: 0.03em;
+    color: var(--white); line-height: 1;
+  }
+  .section-sub {
+    font-size: 15px; color: var(--gray-light);
+    max-width: 360px; line-height: 1.6; text-align: right;
+  }
+
+  /* PRODUCTS */
+  .products-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+  }
+  .product-card {
+    background: var(--panel); padding: 48px 36px;
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden; transition: background 0.3s;
+  }
+  .product-card:hover { background: #181818; }
+  .product-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: var(--green); transform: scaleX(0);
+    transform-origin: left; transition: transform 0.3s;
+  }
+  .product-card:hover::before { transform: scaleX(1); }
+  .product-card.featured {
+    background: var(--green-muted);
+    border: 1px solid rgba(0,255,135,0.15);
+  }
+  .featured-badge {
+    position: absolute; top: 20px; right: 20px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--black); background: var(--green); padding: 4px 10px;
+  }
+  .product-num {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--gray); letter-spacing: 0.08em; margin-bottom: 32px;
+  }
+  .product-name {
+    font-family: 'Bebas Neue', sans-serif; font-size: 30px;
+    letter-spacing: 0.04em; color: var(--white);
+    line-height: 1.1; margin-bottom: 16px;
+  }
+  .product-tagline {
+    font-size: 13px; color: var(--gray-light);
+    line-height: 1.65; flex: 1; margin-bottom: 36px;
+  }
+  .product-price {
+    font-family: 'Bebas Neue', sans-serif; font-size: 42px;
+    color: var(--green); letter-spacing: 0.04em;
+    margin-bottom: 20px; line-height: 1;
+  }
+  .product-price span {
+    font-family: 'DM Mono', monospace; font-size: 14px;
+    color: var(--gray); margin-left: 4px;
+  }
+  .product-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    letter-spacing: 0.08em; text-decoration: none;
+    color: var(--white); border: 1px solid var(--border-light);
+    padding: 12px 20px; transition: all 0.2s; text-transform: uppercase;
+  }
+  .product-link::after { content: ' \2192'; }
+  .product-link:hover { border-color: var(--green); color: var(--green); }
+
+  /* WHAT'S INSIDE */
+  .inside-section {
+    position: relative; z-index: 1;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    background: var(--border); gap: 1px;
+  }
+  .inside-col { background: var(--panel); padding: 56px 40px; }
+  .inside-col-num {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    color: var(--gray); letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .inside-col-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+    letter-spacing: 0.04em; color: var(--white);
+    margin-bottom: 24px; line-height: 1.1;
+  }
+  .inside-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .inside-list li {
+    display: flex; align-items: flex-start;
+    gap: 12px; font-size: 13px;
+    color: var(--gray-light); line-height: 1.5;
+  }
+  .inside-list li::before {
+    content: '//'; font-family: 'DM Mono', monospace;
+    font-size: 10px; color: var(--green);
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    position: relative; z-index: 1;
+    padding: 100px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .steps-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: var(--border); margin-top: 60px;
+  }
+  .step-card { background: var(--panel); padding: 40px 32px; }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 64px;
+    line-height: 1; color: var(--border-light);
+    margin-bottom: 16px;
+  }
+  .step-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+    letter-spacing: 0.04em; color: var(--white); margin-bottom: 12px;
+  }
+  .step-body { font-size: 13px; color: var(--gray-light); line-height: 1.65; }
+
+  /* FINAL CTA */
+  .final-cta {
+    position: relative; z-index: 1;
+    padding: 120px 40px; text-align: center; overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .final-cta-glow {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,255,135,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .final-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    letter-spacing: 0.03em; color: var(--white);
+    line-height: 1; margin-bottom: 24px;
+  }
+  .final-title em { font-style: normal; color: var(--green); }
+  .final-sub {
+    font-size: 16px; color: var(--gray-light);
+    margin-bottom: 48px; line-height: 1.6;
+  }
+  .final-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+  /* EMAIL SIGNUP SECTION */
+  .email-section {
+    position: relative; z-index: 1;
+    border-bottom: 1px solid var(--border);
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  .email-left {
+    padding: 80px 60px 80px 40px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .email-right {
+    background: var(--panel);
+    padding: 80px 40px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .email-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px; letter-spacing: 0.03em;
+    color: var(--white); line-height: 1; margin-bottom: 20px;
+  }
+  .email-heading em { font-style: normal; color: var(--green); }
+  .email-body {
+    font-size: 15px; color: var(--gray-light);
+    line-height: 1.7; max-width: 420px;
+  }
+  .email-cta-btn {
+    display: inline-flex; align-items: center;
+    background: var(--green); color: var(--black);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; font-weight: 500;
+    letter-spacing: 0.06em; text-decoration: none;
+    padding: 20px 40px; transition: all 0.2s;
+    margin-top: 40px; align-self: flex-start;
+  }
+  .email-cta-btn::after { content: ' \2192'; }
+  .email-cta-btn:hover { background: var(--green-dim); transform: translateY(-1px); }
+  .email-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--gray);
+    margin-top: 16px; letter-spacing: 0.04em;
+  }
+  .email-panel-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gray); margin-bottom: 28px;
+  }
+  .email-features { display: flex; flex-direction: column; gap: 20px; }
+  .email-feature {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  }
+  .email-feature:last-child { border-bottom: none; padding-bottom: 0; }
+  .ef-icon {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; color: var(--green); flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .ef-text { font-size: 14px; color: var(--gray-light); line-height: 1.5; }
+  .ef-text strong { color: var(--white); font-weight: 500; display: block; margin-bottom: 4px; font-size: 13px; }
+
+  /* DISCLAIMER */
+  .disclaimer-bar {
+    position: relative; z-index: 1;
+    background: var(--off-black);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 40px;
+  }
+  .disclaimer-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--amber); margin-bottom: 12px;
+  }
+  .disclaimer-text {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--gray); line-height: 1.8;
+    max-width: 920px; letter-spacing: 0.02em;
+  }
+  .disclaimer-text strong { color: #b0a898; }
+
+  /* FOOTER */
+  footer {
+    position: relative; z-index: 1;
+    padding: 36px 40px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.1em; color: var(--white);
+  }
+  .footer-logo span { color: var(--green); }
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--gray); letter-spacing: 0.04em;
+  }
+  .footer-links { display: flex; gap: 24px; list-style: none; }
+  .footer-links a {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--gray); text-decoration: none;
+    letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--green); }
+
+  /* ANIMATIONS */
+  .fade-up {
+    opacity: 0; transform: translateY(24px);
+    animation: fadeUp 0.7s ease forwards;
+  }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.25s; }
+  .delay-3 { animation-delay: 0.4s; }
+  .delay-4 { animation-delay: 0.55s; }
+
+  /* RESPONSIVE */
+  @media (max-width: 960px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 60px 20px; min-height: auto; }
+    .hero-stats { gap: 32px; flex-wrap: wrap; }
+    .products-grid, .inside-section { grid-template-columns: 1fr; }
+    .steps-row { grid-template-columns: 1fr 1fr; }
+    .section, .how-section { padding: 60px 20px; }
+    .final-cta { padding: 80px 20px; }
+    .email-section { grid-template-columns: 1fr; }
+    .email-left { padding: 60px 20px; border-right: none; border-bottom: 1px solid var(--border); }
+    .email-right { padding: 40px 20px; }
+    .disclaimer-bar { padding: 24px 20px; }
+    footer { flex-direction: column; gap: 20px; text-align: center; padding: 32px 20px; }
+    .section-header { flex-direction: column; align-items: flex-start; }
+    .section-sub { text-align: left; }
+  }
+  @media (max-width: 600px) {
+    .steps-row { grid-template-columns: 1fr; }
+    h1 { font-size: 72px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">CLEARANCE AI<span class="ticker-sep"> &middot; </span>PREDICTION MARKET INTELLIGENCE</span>
+    <span class="ticker-item">THE PLAYBOOK<span class="ticker-sep"> &middot; </span>FIND YOUR EDGE</span>
+    <span class="ticker-item">THE SETUP<span class="ticker-sep"> &middot; </span>RUN YOUR AGENTS</span>
+    <span class="ticker-item">THE COMPLETE SYSTEM<span class="ticker-sep"> &middot; </span>BEST VALUE BUNDLE</span>
+    <span class="ticker-item">FOR EDUCATIONAL PURPOSES ONLY<span class="ticker-sep"> &middot; </span>NOT FINANCIAL ADVICE</span>
+    <span class="ticker-item">CLEARANCE AI<span class="ticker-sep"> &middot; </span>PREDICTION MARKET INTELLIGENCE</span>
+    <span class="ticker-item">THE PLAYBOOK<span class="ticker-sep"> &middot; </span>FIND YOUR EDGE</span>
+    <span class="ticker-item">THE SETUP<span class="ticker-sep"> &middot; </span>RUN YOUR AGENTS</span>
+    <span class="ticker-item">THE COMPLETE SYSTEM<span class="ticker-sep"> &middot; </span>BEST VALUE BUNDLE</span>
+    <span class="ticker-item">FOR EDUCATIONAL PURPOSES ONLY<span class="ticker-sep"> &middot; </span>NOT FINANCIAL ADVICE</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">CLEARANCE<span>.</span>AI</a>
+  <ul class="nav-links">
+    <li><a href="#products">Products</a></li>
+    <li><a href="#inside">What's Inside</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#subscribe">Stay Updated</a></li>
+  </ul>
+  <a href="https://clearanceai.gumroad.com/l/completesystem" class="nav-cta" target="_blank">GET THE BUNDLE</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-right"></div>
+
+  <div class="hero-inner">
+    <div class="hero-label fade-up">Prediction Market Intelligence</div>
+    <h1 class="fade-up delay-1">TRADE<br>WHAT<br><em>OTHERS</em><br>MISS.</h1>
+    <p class="hero-sub fade-up delay-2">
+      Prediction markets reward <strong>structure over instinct</strong>. Most participants guess. The edge belongs to those who've built a system &mdash; one that finds mispriced probabilities and acts before the market corrects.
+    </p>
+    <div class="hero-actions fade-up delay-3">
+      <a href="#products" class="btn-primary">See the Products</a>
+      <a href="#inside" class="btn-secondary">What's Inside</a>
+    </div>
+    <div class="hero-stats fade-up delay-4">
+      <div class="stat-item">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Guides Published</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">$39</div>
+        <div class="stat-label">Starting Price</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">+EV</div>
+        <div class="stat-label">Core Framework</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="section" id="products">
+  <div class="section-header">
+    <div>
+      <div class="section-label">// The Clearance Library</div>
+      <div class="section-title">THREE WAYS<br>TO GET SHARP</div>
+    </div>
+    <p class="section-sub">Practical frameworks built from real market experience. No theory. No filler. All signal.</p>
+  </div>
+
+  <div class="products-grid">
+    <div class="product-card">
+      <div class="product-num">01 / PLAYBOOK</div>
+      <div class="product-name">CLEARANCE:<br>THE PREDICTION<br>MARKET PLAYBOOK</div>
+      <p class="product-tagline">The complete framework for finding +EV trades across prediction markets &mdash; probability thinking, position sizing, entry and exit rules, and the mental models that separate consistent traders from noise-chasers.</p>
+      <div class="product-price">$39 <span>one-time</span></div>
+      <a href="https://clearanceai.gumroad.com/l/playbook" class="product-link" target="_blank">Get the Playbook</a>
+    </div>
+
+    <div class="product-card featured">
+      <div class="featured-badge">Best Value</div>
+      <div class="product-num">02 / BUNDLE</div>
+      <div class="product-name">THE COMPLETE<br>SYSTEM</div>
+      <p class="product-tagline">Both guides together &mdash; the strategy and the infrastructure in one package. Everything you need to go from understanding the edge to running automated agents on it. Save $9 vs. buying separately.</p>
+      <div class="product-price">$69 <span>one-time</span></div>
+      <a href="https://clearanceai.gumroad.com/l/completesystem" class="product-link" target="_blank">Get the Bundle</a>
+    </div>
+
+    <div class="product-card">
+      <div class="product-num">03 / SETUP GUIDE</div>
+      <div class="product-name">THE SETUP:<br>RUNNING AUTOMATED<br>AGENTS</div>
+      <p class="product-tagline">The non-engineer's guide to building and deploying AI trading agents. Step-by-step from API setup to live execution &mdash; no computer science background required.</p>
+      <div class="product-price">$39 <span>one-time</span></div>
+      <a href="https://clearanceai.gumroad.com/l/setup" class="product-link" target="_blank">Get the Guide</a>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INSIDE -->
+<section class="inside-section" id="inside">
+  <div class="inside-col">
+    <div class="inside-col-num">01 / Playbook &mdash; What's Inside</div>
+    <div class="inside-col-title">THE STRATEGY LAYER</div>
+    <ul class="inside-list">
+      <li>How prediction market contracts are actually priced</li>
+      <li>Expected value (EV) framework &mdash; the only math that matters</li>
+      <li>How to identify mispriced contracts before correction</li>
+      <li>Position sizing and bankroll management rules</li>
+      <li>Entry, exit, and no-trade criteria</li>
+      <li>Which market categories have the most exploitable edges</li>
+      <li>The psychological traps that eliminate most participants</li>
+    </ul>
+  </div>
+  <div class="inside-col">
+    <div class="inside-col-num">02 / Bundle &mdash; What's Inside</div>
+    <div class="inside-col-title">THE FULL STACK</div>
+    <ul class="inside-list">
+      <li>Everything in the Playbook</li>
+      <li>Everything in The Setup</li>
+      <li>Combined workflow: strategy &rarr; automation &rarr; execution</li>
+      <li>How to connect your analytical framework to agent logic</li>
+      <li>Sample agent rules derived from the Playbook framework</li>
+      <li>Save $9 vs. buying both separately</li>
+      <li>Lifetime access to both guides</li>
+    </ul>
+  </div>
+  <div class="inside-col">
+    <div class="inside-col-num">03 / Setup &mdash; What's Inside</div>
+    <div class="inside-col-title">THE AUTOMATION LAYER</div>
+    <ul class="inside-list">
+      <li>What AI agents are and how they apply to markets</li>
+      <li>Setting up API access on prediction platforms</li>
+      <li>Building your first automated rule-based agent</li>
+      <li>Dry-run testing before committing real capital</li>
+      <li>Logging, monitoring, and kill-switch basics</li>
+      <li>Avoiding the most common automation mistakes</li>
+      <li>Tools: Python, scheduling, simple dashboards</li>
+    </ul>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div>
+    <div class="section-label">// The Process</div>
+    <div class="section-title">FROM FRAMEWORK<br>TO EXECUTION</div>
+  </div>
+  <div class="steps-row">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-title">UNDERSTAND THE MARKET</div>
+      <p class="step-body">Learn how prediction market contracts are priced, where inefficiencies appear, and how to think in probabilities rather than opinions.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-title">BUILD YOUR FRAMEWORK</div>
+      <p class="step-body">Apply the +EV model from the Playbook. Define your entry rules, sizing logic, and the exact conditions under which you simply don't trade.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-title">AUTOMATE THE RULES</div>
+      <p class="step-body">Use The Setup guide to turn your framework into code. Run agents that scan, evaluate, and execute &mdash; without watching every tick.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">04</div>
+      <div class="step-title">ITERATE ON EDGE</div>
+      <p class="step-body">Monitor results, refine your rules, and expand into new market categories as your system matures. Discipline compounds.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-glow"></div>
+  <div class="final-title">STOP<br>REACTING.<br><em>START RUNNING.</em></div>
+  <p class="final-sub">The market doesn't reward opinions. It rewards systems. Pick up the guides and build yours.</p>
+  <div class="final-actions">
+    <a href="https://clearanceai.gumroad.com/l/completesystem" class="btn-primary" target="_blank">Get the Complete System &mdash; $69</a>
+    <a href="https://clearanceai.gumroad.com/l/playbook" class="btn-secondary" target="_blank">Start with the Playbook &mdash; $39</a>
+  </div>
+</section>
+
+<!-- EMAIL SUBSCRIBE -->
+<section class="email-section" id="subscribe">
+  <div class="email-left">
+    <div class="section-label">// Stay in the Loop</div>
+    <div class="email-heading">JOIN THE<br><em>CLEARANCE</em><br>COMMUNITY</div>
+    <p class="email-body">
+      Sign up on Gumroad to stay connected with Clearance AI. Get notified when new guides drop, frameworks are updated, and new tools are released.
+    </p>
+    <a href="https://clearanceai.gumroad.com/" class="email-cta-btn" target="_blank">Follow on Gumroad</a>
+    <div class="email-note">Free to follow &middot; No spam &middot; Unsubscribe anytime</div>
+  </div>
+  <div class="email-right">
+    <div class="email-panel-tag">// What you get access to</div>
+    <div class="email-features">
+      <div class="email-feature">
+        <div class="ef-icon">[01]</div>
+        <div class="ef-text">
+          <strong>New Guide Releases</strong>
+          Be first to know when new Clearance AI publications drop &mdash; before they hit anywhere else.
+        </div>
+      </div>
+      <div class="email-feature">
+        <div class="ef-icon">[02]</div>
+        <div class="ef-text">
+          <strong>Framework Updates</strong>
+          As markets evolve, so do the frameworks. Followers get updates when guides are revised and improved.
+        </div>
+      </div>
+      <div class="email-feature">
+        <div class="ef-icon">[03]</div>
+        <div class="ef-text">
+          <strong>Subscriber-Only Pricing</strong>
+          New products are frequently discounted for the existing community before going to full price.
+        </div>
+      </div>
+      <div class="email-feature">
+        <div class="ef-icon">[04]</div>
+        <div class="ef-text">
+          <strong>Direct Access</strong>
+          All purchases and communications go through Gumroad &mdash; your one place for everything Clearance AI.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer-bar">
+  <div class="disclaimer-label">&#9888; Important Disclaimer</div>
+  <p class="disclaimer-text">
+    All Clearance AI publications are for <strong>educational and informational purposes only</strong> and do not constitute financial advice, investment advice, trading advice, or any other form of professional advice. The content in these guides reflects general frameworks and concepts for educational purposes and is <strong>not a recommendation</strong> to buy, sell, or trade any financial instrument, contract, or asset of any kind. Prediction market trading involves substantial risk of loss and is not suitable for all participants. <strong>Past performance of any strategy, framework, or system described is not indicative of future results.</strong> Individual results will vary. You are solely responsible for your own trading and investment decisions. Always conduct your own independent research and consult a qualified financial professional before making any trading or investment decisions. By purchasing or using any Clearance AI product, you acknowledge that you have read, understood, and agree to these terms.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">CLEARANCE<span>.</span>AI</div>
+  <div class="footer-note">&copy; 2026 Clearance AI &middot; All rights reserved</div>
+  <ul class="footer-links">
+    <li><a href="https://clearanceai.gumroad.com" target="_blank">Gumroad</a></li>
+    <li><a href="https://twitter.com/drewholland1428" target="_blank">X / Twitter</a></li>
+  </ul>
+</footer>
+
+</body>
+</html>
