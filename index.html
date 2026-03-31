@@ -694,61 +694,10 @@
     <div class="section-label">// Stay in the Loop</div>
     <div class="email-heading">JOIN THE<br><em>CLEARANCE</em><br>COMMUNITY</div>
     <p class="email-body">
-      Get notified when new guides drop, frameworks are updated, and new tools are released. Free. No spam.
+      Sign up on Gumroad to stay connected with Clearance AI. Get notified when new guides drop, frameworks are updated, and new tools are released.
     </p>
-    <div style="margin-top: 28px; width: 100%;">
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6b6b;">First Name</label>
-          <input id="bh-fname" type="text" placeholder="Your first name"
-            style="background:#141414; border:1px solid #2a2a2a; color:#f0ede8; font-family:'DM Mono',monospace; font-size:14px; padding:14px 16px; outline:none; width:100%; transition:border-color 0.2s;"
-            onfocus="this.style.borderColor='#00ff87'" onblur="this.style.borderColor='#2a2a2a'" />
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6b6b;">Email Address</label>
-          <input id="bh-email" type="email" placeholder="you@example.com"
-            style="background:#141414; border:1px solid #2a2a2a; color:#f0ede8; font-family:'DM Mono',monospace; font-size:14px; padding:14px 16px; outline:none; width:100%; transition:border-color 0.2s;"
-            onfocus="this.style.borderColor='#00ff87'" onblur="this.style.borderColor='#2a2a2a'" />
-        </div>
-        <button id="bh-btn" onclick="submitBeehiiv()"
-          style="background:#00ff87; color:#080808; border:none; font-family:'DM Mono',monospace; font-size:13px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:16px; cursor:pointer; width:100%; transition:background 0.2s;"
-          onmouseover="this.style.background='#00cc6a'" onmouseout="this.style.background='#00ff87'">
-          JOIN THE LIST &mdash; FREE
-        </button>
-        <div id="bh-msg" style="display:none; font-family:'DM Mono',monospace; font-size:12px; color:#00ff87; letter-spacing:0.06em;"></div>
-      </div>
-    </div>
-    <script>
-    function submitBeehiiv() {
-      var fname = document.getElementById('bh-fname').value.trim();
-      var email = document.getElementById('bh-email').value.trim();
-      var btn   = document.getElementById('bh-btn');
-      var msg   = document.getElementById('bh-msg');
-      if (!email) { alert('Please enter your email address.'); return; }
-      btn.textContent = 'SUBMITTING...';
-      btn.disabled = true;
-      var form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'https://app.beehiiv.com/subscribe/pub_b1095470-69d8-4414-b5fe-217f8fb2aa00';
-      form.target = '_blank';
-      var emailField = document.createElement('input');
-      emailField.type = 'hidden'; emailField.name = 'email'; emailField.value = email;
-      var nameField = document.createElement('input');
-      nameField.type = 'hidden'; nameField.name = 'first_name'; nameField.value = fname;
-      var utmField = document.createElement('input');
-      utmField.type = 'hidden'; utmField.name = 'utm_source'; utmField.value = 'landing_page';
-      form.appendChild(emailField);
-      form.appendChild(nameField);
-      form.appendChild(utmField);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      btn.style.display = 'none';
-      msg.style.display = 'block';
-      msg.textContent = "YOU'RE IN \u2014 CHECK YOUR INBOX";
-    }
-    </script>
-    <div class="email-note" style="margin-top: 14px;">Free &middot; No spam &middot; Unsubscribe anytime</div>
+    <a href="https://clearanceai.gumroad.com/" class="email-cta-btn" target="_blank">Follow on Gumroad</a>
+    <div class="email-note">Free to follow &middot; No spam &middot; Unsubscribe anytime</div>
   </div>
   <div class="email-right">
     <div class="email-panel-tag">// What you get access to</div>
