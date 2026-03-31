@@ -696,15 +696,57 @@
     <p class="email-body">
       Get notified when new guides drop, frameworks are updated, and new tools are released. Free. No spam.
     </p>
-    <div style="margin-top: 16px; width: 100%;">
-      <script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
-      <iframe src="https://subscribe-forms.beehiiv.com/d913b3c3-24eb-4e68-9715-3473cff71390"
-        data-test-id="beehiiv-embed"
-        frameborder="0"
-        scrolling="no"
-        style="width: 100%; height: 280px; margin: 0; border-radius: 0px !important; background-color: transparent; box-shadow: 0 0 #0000; max-width: 100%;">
-      </iframe>
+    <div style="margin-top: 28px; width: 100%;">
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6b6b;">First Name</label>
+          <input id="bh-fname" type="text" placeholder="Your first name"
+            style="background:#141414; border:1px solid #2a2a2a; color:#f0ede8; font-family:'DM Mono',monospace; font-size:14px; padding:14px 16px; outline:none; width:100%; transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#00ff87'" onblur="this.style.borderColor='#2a2a2a'" />
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:#6b6b6b;">Email Address</label>
+          <input id="bh-email" type="email" placeholder="you@example.com"
+            style="background:#141414; border:1px solid #2a2a2a; color:#f0ede8; font-family:'DM Mono',monospace; font-size:14px; padding:14px 16px; outline:none; width:100%; transition:border-color 0.2s;"
+            onfocus="this.style.borderColor='#00ff87'" onblur="this.style.borderColor='#2a2a2a'" />
+        </div>
+        <button id="bh-btn" onclick="submitBeehiiv()"
+          style="background:#00ff87; color:#080808; border:none; font-family:'DM Mono',monospace; font-size:13px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; padding:16px; cursor:pointer; width:100%; transition:background 0.2s;"
+          onmouseover="this.style.background='#00cc6a'" onmouseout="this.style.background='#00ff87'">
+          JOIN THE LIST &mdash; FREE
+        </button>
+        <div id="bh-msg" style="display:none; font-family:'DM Mono',monospace; font-size:12px; color:#00ff87; letter-spacing:0.06em;"></div>
+      </div>
     </div>
+    <script>
+    function submitBeehiiv() {
+      var fname = document.getElementById('bh-fname').value.trim();
+      var email = document.getElementById('bh-email').value.trim();
+      var btn   = document.getElementById('bh-btn');
+      var msg   = document.getElementById('bh-msg');
+      if (!email) { alert('Please enter your email address.'); return; }
+      btn.textContent = 'SUBMITTING...';
+      btn.disabled = true;
+      fetch('https://api.beehiiv.com/v2/publications/pub_b1095470-69d8-4414-b5fe-217f8fb2aa00/subscriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, first_name: fname, reactivate_existing: true, send_welcome_email: true })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        btn.style.display = 'none';
+        msg.style.display = 'block';
+        msg.textContent = "YOU'RE IN \u2014 CHECK YOUR INBOX";
+      })
+      .catch(function() {
+        btn.textContent = 'JOIN THE LIST \u2014 FREE';
+        btn.disabled = false;
+        msg.style.display = 'block';
+        msg.style.color = '#f5a623';
+        msg.textContent = 'Something went wrong. Please try again.';
+      });
+    }
+    </script>
     <div class="email-note" style="margin-top: 14px;">Free &middot; No spam &middot; Unsubscribe anytime</div>
   </div>
   <div class="email-right">
