@@ -727,24 +727,25 @@
       if (!email) { alert('Please enter your email address.'); return; }
       btn.textContent = 'SUBMITTING...';
       btn.disabled = true;
-      fetch('https://api.beehiiv.com/v2/publications/pub_b1095470-69d8-4414-b5fe-217f8fb2aa00/subscriptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, first_name: fname, reactivate_existing: true, send_welcome_email: true })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        btn.style.display = 'none';
-        msg.style.display = 'block';
-        msg.textContent = "YOU'RE IN \u2014 CHECK YOUR INBOX";
-      })
-      .catch(function() {
-        btn.textContent = 'JOIN THE LIST \u2014 FREE';
-        btn.disabled = false;
-        msg.style.display = 'block';
-        msg.style.color = '#f5a623';
-        msg.textContent = 'Something went wrong. Please try again.';
-      });
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://app.beehiiv.com/subscribe/pub_b1095470-69d8-4414-b5fe-217f8fb2aa00';
+      form.target = '_blank';
+      var emailField = document.createElement('input');
+      emailField.type = 'hidden'; emailField.name = 'email'; emailField.value = email;
+      var nameField = document.createElement('input');
+      nameField.type = 'hidden'; nameField.name = 'first_name'; nameField.value = fname;
+      var utmField = document.createElement('input');
+      utmField.type = 'hidden'; utmField.name = 'utm_source'; utmField.value = 'landing_page';
+      form.appendChild(emailField);
+      form.appendChild(nameField);
+      form.appendChild(utmField);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      btn.style.display = 'none';
+      msg.style.display = 'block';
+      msg.textContent = "YOU'RE IN \u2014 CHECK YOUR INBOX";
     }
     </script>
     <div class="email-note" style="margin-top: 14px;">Free &middot; No spam &middot; Unsubscribe anytime</div>
